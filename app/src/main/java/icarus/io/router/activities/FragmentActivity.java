@@ -16,7 +16,7 @@ public class FragmentActivity extends RoutableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragments);
 
-        Fragment fragment = (Fragment) getMetaRoute( Meta.FRAGMENT );
+        Fragment fragment = (Fragment) getRouteMeta( Meta.FRAGMENT );
         getSupportFragmentManager()
                 .beginTransaction()
                 .add( R.id.fragment_container, fragment )

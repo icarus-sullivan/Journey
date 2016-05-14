@@ -1,8 +1,11 @@
 package icarus.io.router;
 
+import icarus.io.router.activities.FragmentActivity;
+import icarus.io.router.activities.MainActivity;
+import icarus.io.router.activities.WebActivity;
 import icarus.io.router.annotation.Route;
 import icarus.io.router.fragments.SimpleFragment;
-import icarus.io.router.router.AppRouter;
+import icarus.io.router.api.AppRouter;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -13,10 +16,17 @@ import icarus.io.router.router.AppRouter;
  */
 public interface Routes extends AppRouter {
 
-    @Route( action = FRAGMENT_ACTIVITY, fragment = SimpleFragment.class, extras = { "foo", "bar", "caz" } )
+    @Route( activity = FragmentActivity.class,
+            fragment = SimpleFragment.class,
+            extras = { "foo", "bar", "caz" } )
     void SimpleFragmentRoute();
 
-    @Route( action = WEB_ACTIVITY, url = "https://www.google.com/?gws_rd=ssl", title = "Google Search" )
+    @Route( activity = WebActivity.class,
+            url = "https://www.google.com/?gws_rd=ssl",
+            title = "Google Search" )
     void GoogleWebRoute();
+
+    @Route( activity = MainActivity.class, extras = {"tab1"})
+    void TabOne();
 
 }

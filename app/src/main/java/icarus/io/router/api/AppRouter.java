@@ -1,6 +1,7 @@
-package icarus.io.router.router;
+package icarus.io.router.api;
 
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -13,10 +14,6 @@ import android.support.v4.app.Fragment;
  */
 public interface AppRouter {
 
-    String MAIN_ACTIVITY = "android.intent.action.MAIN";
-    String FRAGMENT_ACTIVITY = "com.smashingideas.FRAGMENT_VIEW";
-    String WEB_ACTIVITY = "com.smashingideas.WEB_VIEW";
-
     String TITLE = "_title";
     String EXTRAS = "_extras";
     String META_ROUTE = "_meta";
@@ -28,6 +25,7 @@ public interface AppRouter {
      */
     @SuppressWarnings("all")
     class DummyFragment extends Fragment {}
+    class DummyActivity extends AppCompatActivity {}
     String EMPTY_URL = "";
     String DEFAULT_TITLE = "App";       // original.. right?
 

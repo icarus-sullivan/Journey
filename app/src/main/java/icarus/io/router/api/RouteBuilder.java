@@ -1,4 +1,4 @@
-package icarus.io.router.router;
+package icarus.io.router.api;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,23 +6,34 @@ import android.content.Intent;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Vector;
 
 import icarus.io.router.annotation.Route;
+import icarus.io.router.mixin.RouteMixin;
 
 /**
  * Created by chrissullivan on 5/10/16.
  */
 public class RouteBuilder implements InvocationHandler {
 
-    private Class<? extends AppRouter> clz;
     private Context appContext;
 
-    public RouteBuilder( Context context, Class<? extends AppRouter> clz ) {
+    // vector's are used because they are volatile in nature
+    private Vector<RouteMixin> mixins = new Vector<>();
+
+
+    public RouteBuilder( Context context ) {
         this.appContext = context;
-        this.clz = clz;
     }
 
-    public AppRouter build() {
+    public RouteBuilder registerMixin( RouteMixin mixin ) {
+        if( !mixins.contains( mixin ) ) {
+            mixins.add( mixin );
+        }
+        return this;
+    }
+
+    public AppRouter build( Class<? extends AppRouter> clz ) {
         if( clz == null ) return null;
 
         return (AppRouter) Proxy.newProxyInstance( clz.getClassLoader(),
@@ -41,12 +52,9 @@ public class RouteBuilder implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Intent intent = new Intent( AppRouter.MAIN_ACTIVITY );
-
         Route route = method.getAnnotation( Route.class );
         if( route != null ) {
-            intent = new Intent( route.action() );
-
+            Intent intent = new Intent(appContext, route.activity() );
             if( !route.url().equals( AppRouter.EMPTY_URL ) ) {
                 intent.putExtra( AppRouter.META_ROUTE, route.url() );
             }
@@ -63,10 +71,15 @@ public class RouteBuilder implements InvocationHandler {
             if( extras.length > 0 ) {
                 intent.putExtra( AppRouter.EXTRAS, extras);
             }
-        }
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        appContext.startActivity(intent);
+            // pass intent to mix-ins for extra data modification
+            for (RouteMixin mixin : mixins) {
+                mixin.onNewIntent( intent );
+            }
+
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            appContext.startActivity(intent);
+        }
         return null;
     }
 }

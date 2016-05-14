@@ -1,8 +1,11 @@
 package icarus.io.router;
 
 import android.app.Application;
+import android.content.Intent;
+import android.util.Log;
 
-import icarus.io.router.router.RouteBuilder;
+import icarus.io.router.api.RouteBuilder;
+import icarus.io.router.mixin.RouteMixin;
 
 /**
  * Created by chrissullivan on 5/11/16.
@@ -23,8 +26,15 @@ public class RouterApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // Keep router alive during app life
-        router = (Routes) new RouteBuilder( getApplicationContext(), Routes.class ).build();
+        // Keep router alive during app lifecycle
+        router = (Routes) new RouteBuilder( getApplicationContext() )
+                .registerMixin(new RouteMixin() {
+                    @Override
+                    public void onNewIntent(Intent intent) {
+                        Log.d("====>", "intent: " + intent.getComponent());
+                    }
+                })
+                .build(Routes.class);
     }
 
     public static Routes getRoutes() {

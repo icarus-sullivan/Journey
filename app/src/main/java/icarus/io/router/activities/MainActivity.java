@@ -1,6 +1,8 @@
 package icarus.io.router.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -24,6 +26,9 @@ public class MainActivity extends RoutableActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch( v.getId() ) {
+            case R.id.tab1:
+                RouterApp.getRoutes().TabOne();
+                break;
             case R.id.route_fragment:
                 RouterApp.getRoutes().SimpleFragmentRoute();
                 break;
@@ -33,4 +38,9 @@ public class MainActivity extends RoutableActivity implements View.OnClickListen
         }
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d("====>", "onNewIntent");
+    }
 }

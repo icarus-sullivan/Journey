@@ -1,13 +1,14 @@
 package icarus.io.router.annotation;
 
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import icarus.io.router.router.AppRouter;
+import icarus.io.router.api.AppRouter;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -17,15 +18,15 @@ import icarus.io.router.router.AppRouter;
 public @interface Route {
 
     /**
-     * The action the router will try to create an Intent with, default will go to
-     * the main app screen
-     */
-    String action() default AppRouter.MAIN_ACTIVITY;
-
-    /**
      * Optional title
      */
     String title() default AppRouter.DEFAULT_TITLE;
+
+    /**
+     * The activity the router will try to create an Intent with, default will go to
+     * the main app screen
+     */
+    Class<? extends AppCompatActivity> activity() default AppRouter.DummyActivity.class;
 
     /**
      * Fragment must extend support.v4.Fragment

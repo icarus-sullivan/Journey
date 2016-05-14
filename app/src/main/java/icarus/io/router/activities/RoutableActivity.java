@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import icarus.io.router.router.AppRouter;
+import icarus.io.router.api.AppRouter;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -14,8 +14,7 @@ public class RoutableActivity extends AppCompatActivity {
 
     public enum Meta {
         FRAGMENT,
-        WEB,
-        DEFAULT
+        WEB
     }
 
     @Override
@@ -30,15 +29,11 @@ public class RoutableActivity extends AppCompatActivity {
     }
 
     public String[] getExtras() {
-        return getIntent().getStringArrayExtra( AppRouter.EXTRAS );
+        return getIntent().getStringArrayExtra(AppRouter.EXTRAS);
     }
 
-    public String getRouterData( String name ) {
-        return getIntent().getStringExtra( name );
-    }
-
-    public Object getMetaRoute( Meta meta ) {
-        String metaRoute = getRouterData( AppRouter.META_ROUTE );
+    public Object getRouteMeta( Meta meta ) {
+        String metaRoute = getIntent().getStringExtra(AppRouter.META_ROUTE);
         switch( meta ) {
             case FRAGMENT:
                 if( metaRoute != null ) {
@@ -54,8 +49,10 @@ public class RoutableActivity extends AppCompatActivity {
                     }
                 }
                 break;
+            case WEB:
+                return metaRoute;
         }
-        return metaRoute;
+        return null;
     }
 
 }

@@ -65,7 +65,7 @@ public class WebActivity extends RoutableActivity {
             }
         }
 
-        String metaRoute = (String) getMetaRoute( Meta.WEB );
+        String metaRoute = (String) getRouteMeta( Meta.WEB );
         web.loadUrl( metaRoute );
     }
 
