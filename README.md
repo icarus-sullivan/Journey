@@ -1,7 +1,7 @@
 [ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/approuter/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/approuter/_latestVersion)
 
 # approuter
-An Android app router, used to consolidate all app routes into one class definition. 
+An Android app router, used to consolidate all app routes into one class definition. It's invention was sparked by an app I worked on with Josh Shepard where he implemented a Router for mutliple navigations.
 
 
 ## How to get it?
@@ -62,14 +62,14 @@ public interface Router extends AppRouter {
 
 
 ## RouteBuilder 
-#### Without Mixins
-The Router interface we made must usually be implemented by some other class. However, this is where the RouteBuilder comes into play.
+RouteBuilder is a class that constructs our Router interface. You must use it as the Router constructor in order for it to work. RouteBuilder comes with two constructors, one with a mixin option, and one without.
 
+#### Without Mixins
 * Create a subclass of Application
 * Add a static instance of the Router interface we made earlier
-* Override the method onCreate() and create the Router with RouterBuilder
+* Override the method onCreate() and construct the Router with RouterBuilder
 * Create a getter method to allow app-wide classes access to our Router.
-```
+```java
 public class App extends Application {
 
     private static Router router;
@@ -78,7 +78,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        router = (Router) new RouteBuilder(getApplicationContext() ).build(Router.class);
+        router = (Router) new RouteBuilder(getApplicationContext()).build(Router.class);
     }
 
     public static Router getRouter() {
@@ -91,7 +91,7 @@ public class App extends Application {
 #### With Mixins
 In case developers want to hook into the Intent creation process before the created routes are started, we can construct the Router above with an optional parameter in the RouteBuilder called a RouteMixin. Additionally we can add multiple mixins as long as the RouteBuilder class has not been built into our Router class.
 
-```
+```java
 // an example of a mixin --
 //              allowing modification of routes via Intent access
 router = (Router) new RouteBuilder(getApplicationContext(), 
@@ -103,6 +103,27 @@ router = (Router) new RouteBuilder(getApplicationContext(),
         })
         .build(Router.class);
 ```
+An example of a RouteBuidler with multiple mixins
+
+```java
+RouteBuilder rb = new RouteBuilder( getApplicationContext());
+rb.registerMixins(
+    new RouteMixin() {
+        @Override
+        public void onNewIntent(Intent intent) {
+            // mixin 1
+        }
+    },
+    new RouteMixin() {
+        @Override
+        public void onNewIntent(Intent intent) {
+            // mixin 2
+        }
+});
+        
+router = (Router) rb.build(Router.class);
+```
+
 
 ## RoutableActivity
 If you want to receive data from the Routes easily you can choose to extend your AppCompatActivities with RoutableActivity instead. The only difference between the two is that RoutableActivity will generate the optional title for you, and adds a couple convenience methods for data retrieval.
@@ -149,9 +170,35 @@ public class FragmentActivity extends RoutableActivity {
 }
 ```
 
+## Regular Activities
+If you don't extend RoutableActivity you can still retrieve our route information like you would any other data passed into an Intent.
+
+```java
+public class RegularActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // meta route will contain url or a fragment class canonical name
+        String url = getIntent().getStringExtra(AppRouter.META_ROUTE);
+        
+        // if its a fragment the canonical name will be given
+        String fragmentClass = getIntent().getStringExtra(AppRouter.META_ROUTE);
+        
+        // you can get it construct the fragment like this
+        Fragment fragment = Fragment.instantiate( getBaseContext(), fragmentClass );
+        
+        String[] extras = getIntent().getStringArrayExtra(AppRouter.EXTRAS);
+        
+        String title = getIntent().getStringExtra( AppRouter.TITLE );
+    }
+}
+```
+
 ## Navigation to Routes
 
-If the above Router was built, and created via the App class. We can now navigate to any activity in the app
+Assuming Router was built statically within the App class like the above example. We can now navigate to any activity in the app
 from wherever we are in the app.
 
 ```
@@ -161,3 +208,28 @@ App.getRouter().MainPage();
 // or launch the Source Code page
 App.getRouter().VisitWebPage();
 ```
+
+## Class Specific Routes
+You can create routes any way you wish, making routes specific to activities, fragments, or any POJO. Here is an example using an Activity.
+```java
+public class RegularActivity extends AppCompatActivity {
+
+    private Router router;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+        router = (Router) new RouteBuilder( getBaseContext(), new RouteMixin() {
+            @Override
+            public void onNewIntent(Intent intent) {
+                // mixin data if desired
+            }
+        }).build( Router.class );
+    }
+}
+```
+
+### Final Thoughts
+Have Suggestions or extra features you want in AppRouter? Let me know chrissullivan.dev@gmail.com. Or log an issues on github to let me know.
