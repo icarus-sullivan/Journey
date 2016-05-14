@@ -148,3 +148,16 @@ public class FragmentActivity extends RoutableActivity {
     }
 }
 ```
+
+## Navigation to Routes
+
+If the above Router was built, and created via the App class. We can now navigate to any activity in the app
+from wherever we are in the app.
+
+```
+// getRouter statically, and navigate to MainPage
+App.getRouter().MainPage();
+
+// or launch the Source Code page
+App.getRouter().VisitWebPage();
+```
