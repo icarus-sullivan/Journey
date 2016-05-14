@@ -92,13 +92,20 @@ public class App extends Application {
 In case developers want to hook into the Intent creation process before the created routes are started, we can construct the Router above with an optional parameter in the RouteBuilder called a RouteMixin. Additionally we can add multiple mixins as long as the RouteBuilder class has not been built into our Router class.
 
 ```java
+// modify our Router interface 
+public interface Router extends AppRouter {
+    ... 
+    String PROFILE_KEY = "profile_key";
+}
+
 // an example of a mixin --
 //              allowing modification of routes via Intent access
 router = (Router) new RouteBuilder(getApplicationContext(), 
         new RouteMixin() {
             @Override
             public void onNewIntent(Intent intent) {
-                Log.d("====>", "handleMixinData");
+                // pass our user profile id to another activity/fragment
+                intent.putExtra( Router.PROFILE_KEY, "fae532g12d");
             }
         })
         .build(Router.class);
