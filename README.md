@@ -63,7 +63,7 @@ public interface Router extends AppRouter {
 
 ## RouteBuilder 
 #### Without Mixins
-The route we made is an interface, and must be implemented. This is where the RouteBuilder comes into play. 
+The Router interface we made must usually be implemented by some other class. However, this is where the RouteBuilder comes into play.
 
 * Create a subclass of Application
 * Add a static instance of the Router interface we made earlier
