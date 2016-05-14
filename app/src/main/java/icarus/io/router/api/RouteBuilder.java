@@ -18,17 +18,25 @@ public class RouteBuilder implements InvocationHandler {
 
     private Context appContext;
 
-    // vector's are used because they are volatile in nature
+    // vectors should prevent against ConcurrentModificationExceptions
     private Vector<RouteMixin> mixins = new Vector<>();
-
 
     public RouteBuilder( Context context ) {
         this.appContext = context;
     }
 
-    public RouteBuilder registerMixin( RouteMixin mixin ) {
+    public RouteBuilder( Context context, RouteMixin mixin ) {
+        this.appContext = context;
         if( !mixins.contains( mixin ) ) {
             mixins.add( mixin );
+        }
+    }
+
+    public RouteBuilder registerMixins( RouteMixin ... register ) {
+        for( RouteMixin mixin : register ) {
+            if( !mixins.contains( mixin ) ) {
+                mixins.add( mixin );
+            }
         }
         return this;
     }
@@ -54,19 +62,28 @@ public class RouteBuilder implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Route route = method.getAnnotation( Route.class );
         if( route != null ) {
-            Intent intent = new Intent(appContext, route.activity() );
+            // check for valid activity class
+            if( route.activity().isAssignableFrom( AppRouter.DummyActivity.class ) ) {
+                return null;
+            }
+
+            Intent intent = new Intent( appContext, route.activity() );
+            // check if this is a URL based route
             if( !route.url().equals( AppRouter.EMPTY_URL ) ) {
                 intent.putExtra( AppRouter.META_ROUTE, route.url() );
             }
 
+            // check if this is a fragment based route
             if( !route.fragment().isAssignableFrom( AppRouter.DummyFragment.class ) ) {
                 intent.putExtra( AppRouter.META_ROUTE, route.fragment().getCanonicalName() );
             }
 
+            // check for title
             if( route.title() != null ) {
                 intent.putExtra( AppRouter.TITLE, route.title() );
             }
 
+            // add extras if any
             String[] extras = route.extras();
             if( extras.length > 0 ) {
                 intent.putExtra( AppRouter.EXTRAS, extras);
@@ -77,7 +94,8 @@ public class RouteBuilder implements InvocationHandler {
                 mixin.onNewIntent( intent );
             }
 
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // start our new activity
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );
             appContext.startActivity(intent);
         }
         return null;
