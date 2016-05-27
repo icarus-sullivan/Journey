@@ -94,6 +94,19 @@ public class RouteBuilder implements InvocationHandler {
                 mixin.onNewIntent( intent );
             }
 
+            if( args.length != null && args.length > 0 ) {
+                RouteMixin rm = null;
+                for( Object o : args ) {
+                    if( o instanceof RouteMixin ) {
+                        rm = o;
+                    }
+                }
+                
+                if( rm != null ) {
+                    rm.onNewIntent( intent );
+                }
+            }
+
             // start our new activity
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );
             appContext.startActivity(intent);
