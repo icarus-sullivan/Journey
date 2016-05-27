@@ -95,11 +95,11 @@ public class RouteBuilder implements InvocationHandler {
             }
 
             // check for RouteMixin parameter
-            if( args.length != null && args.length > 0 ) {
+            if( args != null && args.length > 0 ) {
                 RouteMixin rm = null;
                 for( Object o : args ) {
                     if( o instanceof RouteMixin ) {
-                        rm = o;
+                        rm = (RouteMixin) o;
                     }
                 }
                 

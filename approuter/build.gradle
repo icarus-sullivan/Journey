@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.github.icarus-sullivan'
-version = '1.0.2'
+version = '1.0.3'
 
 ext {
     CapitalName = 'AppRouter'
@@ -11,7 +11,7 @@ ext {
     SourceUrl = 'https://github.com/icarus-sullivan/approuter.git'
     Website = 'https://github.com/icarus-sullivan/approuter'
     Description = 'An Android app router, used to consolidate all app routes into one class definition.'
-    Version = '1.0.2'
+    Version = '1.0.3'
     ArtifactId = 'approuter'
     Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
 }

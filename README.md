@@ -215,6 +215,32 @@ App.getRouter().MainPage();
 // or launch the Source Code page
 App.getRouter().VisitWebPage();
 ```
+You can now set a RouteMixin as a parameter in your route files and provide a mixin when calling a route. This will pass you
+a reference of the created intent before it is launched but at a navigation-invoccation level.
+
+```
+// Router modifications
+public class Router {
+
+    @Route( activity = MyActivity.class )
+    void MainPage( RouteMixin routeMixing );
+
+}
+
+// class level invoccation
+App.getRouter().MainPage( new RouteMixin() {
+    @Override
+    public void onNewIntent(Intent route ) {
+        // add data to created Intent before its called
+    }
+});
+
+
+```
+
+## Want a more granular mixin?
+
+
 
 ## Class Specific Routes
 You can create routes any way you wish, making routes specific to activities, fragments, or any POJO. Here is an example using an Activity.
