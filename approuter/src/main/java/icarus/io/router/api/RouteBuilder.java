@@ -94,6 +94,7 @@ public class RouteBuilder implements InvocationHandler {
                 mixin.onNewIntent( intent );
             }
 
+            // check for RouteMixin parameter
             if( args.length != null && args.length > 0 ) {
                 RouteMixin rm = null;
                 for( Object o : args ) {
