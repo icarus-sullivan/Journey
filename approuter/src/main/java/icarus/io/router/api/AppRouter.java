@@ -14,10 +14,7 @@ import android.support.v7.app.AppCompatActivity;
  */
 public interface AppRouter {
 
-    String TITLE = "_title";
-    String EXTRAS = "_extras";
     String META_ROUTE = "_meta";
-
 
     /**
      *
@@ -27,6 +24,5 @@ public interface AppRouter {
     class DummyFragment extends Fragment {}
     class DummyActivity extends AppCompatActivity {}
     String EMPTY_URL = "";
-    String DEFAULT_TITLE = "App";       // original.. right?
 
 }

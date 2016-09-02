@@ -11,26 +11,20 @@ import java.lang.annotation.Target;
 import icarus.io.router.api.AppRouter;
 
 /**
- * Created by chrissullivan on 5/10/16.
+ * Created by chris on 9/1/16.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Route {
+public @interface ForResult {
 
     /**
-     * The activity the router will try to create an Intent with, default will go to
-     * the main app screen
+     * The activity the router will try to create an Intent wit
      */
     Class<? extends AppCompatActivity> Activity() default AppRouter.DummyActivity.class;
 
     /**
-     * Fragment must extend support.v4.Fragment
+     * A result number to use in onActivityResult
      */
-    Class<? extends Fragment> Fragment() default AppRouter.DummyFragment.class;
-
-    /**
-     * A web url for use in a WebView
-     */
-    String Url() default AppRouter.EMPTY_URL;
+    int RequestCode() default 2;
 
 }

@@ -17,19 +17,8 @@ public class RoutableActivity extends AppCompatActivity {
         WEB
     }
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        // get name from route, or use class name
-        if( getIntent() != null && getIntent().getStringExtra( AppRouter.TITLE ) != null ) {
-            setTitle( getIntent().getStringExtra( AppRouter.TITLE ) );
-        } else {
-            setTitle(getClass().getSimpleName());
-        }
-        super.onCreate(savedInstanceState);
-    }
-
-    public String[] getExtras() {
-        return getIntent().getStringArrayExtra(AppRouter.EXTRAS);
+    public Bundle getExtras() {
+        return getIntent().getExtras();
     }
 
     public Object getRouteMeta( Meta meta ) {
@@ -40,9 +29,7 @@ public class RoutableActivity extends AppCompatActivity {
                     try {
                         Class<?> c = Class.forName( metaRoute );
                         Fragment extraFragment = (Fragment) c.newInstance();
-                        Bundle bundle = new Bundle();
-                        bundle.putStringArray( AppRouter.EXTRAS, getExtras() );
-                        extraFragment.setArguments( bundle );
+                        extraFragment.setArguments( getExtras()  );
                         return extraFragment;
                     } catch (Exception e) {
                         e.printStackTrace();
