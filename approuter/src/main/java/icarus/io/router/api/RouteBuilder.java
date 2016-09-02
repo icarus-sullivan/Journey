@@ -17,7 +17,7 @@ import icarus.io.router.mixin.RouteMixin;
 /**
  * Created by chrissullivan on 5/10/16.
  */
-public class RouteBuilder<T> implements InvocationHandler {
+public class RouteBuilder implements InvocationHandler {
 
     private Context appContext;
 
