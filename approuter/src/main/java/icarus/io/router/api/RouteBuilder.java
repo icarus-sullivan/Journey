@@ -3,6 +3,7 @@ package icarus.io.router.api;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import java.lang.reflect.InvocationHandler;
@@ -10,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Vector;
 
+import icarus.io.router.annotation.Action;
 import icarus.io.router.annotation.ForResult;
 import icarus.io.router.annotation.Route;
 import icarus.io.router.mixin.RouteMixin;
@@ -72,91 +74,75 @@ public class RouteBuilder implements InvocationHandler {
             handleForResult( method.getAnnotation( ForResult.class ), args );
         }
 
+        if( method.isAnnotationPresent(Action.class) ) {
+            handleAction( method.getAnnotation( Action.class ), args );
+        }
+
         return null;
     }
 
     private void handleRoute( Route route, Object[] args ) {
-        // check for valid activity class
-        if( route.Activity().isAssignableFrom( AppRouter.DummyActivity.class ) ) {
-            return;
-        }
-
-        Intent intent = new Intent( appContext, route.Activity() );
-        // check if this is a URL based route
-        if( !route.Url().equals( AppRouter.EMPTY_URL ) ) {
-            intent.putExtra( AppRouter.META_ROUTE, route.Url() );
-        }
-
-        // check if this is a fragment based route
-        if( !route.Fragment().isAssignableFrom( AppRouter.DummyFragment.class ) ) {
-            intent.putExtra( AppRouter.META_ROUTE, route.Fragment().getCanonicalName() );
-        }
-
-        // pass intent to mix-ins for extra data modification
-        for (RouteMixin mixin : mixins) {
-            mixin.onNewIntent( intent );
-        }
-
-        // check for RouteMixin parameter
-        if( args != null && args.length > 0 ) {
-            RouteMixin rm = null;
-            for( Object o : args ) {
-                if( o instanceof RouteMixin ) {
-                    rm = (RouteMixin) o;
+        new IntentHolder<Route>( args ) {
+            @Override
+            void onGatherExtras(Route extras) {
+                if( !extras.Fragment().isAssignableFrom( AppRouter.DummyFragment.class ) ) {
+                    mFragment = extras.Fragment().getCanonicalName();
                 }
 
-                if( o instanceof Bundle ) {
-                    intent.putExtras( (Bundle)o );
+                if( extras.Url() != AppRouter.EMPTY_URL ) {
+                    mUrl = extras.Url();
                 }
+
+                mIntent = new Intent( appContext, extras.Activity() );
             }
 
-            if( rm != null ) {
-                rm.onNewIntent( intent );
+            @Override
+            void onLaunchIntent() {
+                appContext.startActivity( mIntent );
             }
-        }
-
-        // start our new activity
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );
-        appContext.startActivity(intent);
+        }.launch( route, mixins );
     }
 
-    private void handleForResult( ForResult result, Object[] args ) {
-        AppCompatActivity callingActivity = null;
-        RouteMixin mixin = null;
-        Bundle bundle = null;
+    private void handleForResult(final ForResult result, Object[] args ) {
+        new IntentHolder<ForResult>( args ) {
+            @Override
+            void onGatherExtras(ForResult extras) {
+                mIntent = new Intent(appContext, extras.Activity());
 
-        for( Object o : args ) {
-            if( o instanceof AppCompatActivity ) {
-                callingActivity = (AppCompatActivity) o;
+                mRequestCode = extras.RequestCode();
             }
 
-            if( o instanceof RouteMixin ) {
-                mixin = (RouteMixin) o;
+            @Override
+            void onLaunchIntent() {
+                if( mCallingActivity != null && mRequestCode != AppRouter.NO_REQUEST ) {
+                    mCallingActivity.startActivityForResult(mIntent, mRequestCode);
+                }
+            }
+        }.launch( result, mixins );
+    }
+
+    private void handleAction(final Action action, Object[] args ) {
+        new IntentHolder<Action>( args ) {
+            @Override
+            void onGatherExtras(Action extras) {
+                mRequestCode = extras.RequestCode();
+
+                if( mUri != null ) {
+                    mIntent = new Intent( action.Action(), mUri );
+                } else {
+                    mIntent = new Intent( action.Action() );
+                }
             }
 
-            if( o instanceof Bundle )  {
-                bundle = (Bundle) o;
+            @Override
+            void onLaunchIntent() {
+                if( mCallingActivity != null && mRequestCode != AppRouter.NO_REQUEST ) {
+                    mCallingActivity.startActivityForResult( mIntent, mRequestCode );
+                } else {
+                    appContext.startActivity(mIntent);
+                }
             }
-        }
-
-        // no calling activity, can't actually call this
-        if( callingActivity == null ) return;
-
-        // create intent to pass arguments to it
-        Intent intent = new Intent( callingActivity, result.Activity() );
-
-        // invoke mixin
-        if( mixin != null ) {
-            mixin.onNewIntent( intent );
-        }
-
-        // add extras
-        if( bundle != null ) {
-            intent.putExtras( bundle );
-        }
-
-        // start er' up
-        callingActivity.startActivityForResult( intent, result.RequestCode() );
+        }.launch( action, mixins );
     }
 
 }

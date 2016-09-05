@@ -14,7 +14,11 @@ import android.support.v7.app.AppCompatActivity;
  */
 public interface AppRouter {
 
-    String META_ROUTE = "_meta";
+    String EXTRA_URL = "_url_";
+
+    String EXTRA_FRAGMENT = "_fragment_";
+
+    int NO_REQUEST = -1;
 
     /**
      *

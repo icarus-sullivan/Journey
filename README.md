@@ -11,7 +11,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:approuter:1.0.4'
+    compile 'com.github.icarus-sullivan:approuter:1.0.5'
 }
 ```
 
@@ -22,7 +22,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>approuter</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <type>pom</type>
 </dependency>
 ```
@@ -30,252 +30,119 @@ If your using maven you can add this to your project.
 
 ## How do I use it?
 
-### Creating a router
-Create a new interface class that extends AppRouter.
-* Add some method declarations that describe the app route.
-* Add Route annotations to describe the contents of the Route.
-* Add ForResult annotations for startActivityForResult cases
+### Supported parameter types
+* RouteMixin - an intent interceptor, returning false in onNewIntent will cut the intent short, this is good for auth failure or conditional routes
+* Bundle - your standard bundle of arguments to pass in
+* (Action) Uri - the uri to include in an action, only used for Action based intents
+
+### @Route
+Route is an annotation that supports three values
+* A class extending android.support.v4.app.Fragment
+* A class extending android.support.v7.app.AppCompatActivity
+* A url
+
+_example_
+```java
+@Route( Activity = WebViewActivity.class, Fragment = WebViewFragment.class, Url = "http://domain.com" )
+void GoToDomain( RouteMixin mixin, Bundle extras );
+```
+
+### @ForResult
+ForResult calls activity for a result, and needs a callingActivity as a parameter to its methods
+* A class extending android.support.v7.app.AppCompatActivity
+* RequestCode - the request code to be sent to the activityForResult
+
+_example_
+```java
+int REQUEST_CODE = 0x0003;
+
+@ForResult( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
+void GetImageFromCamera( AppCompatActivity callingActivity );
+```
+
+### @Action
+An action based intent, can have optional parameter Uri
+* Action some String defining an action
+* (Optional) RequestCode, in case your action is also returning a result - (if so a callingActivity must be provided)
+
+_example_
+```java
+@Action( Action = Intent.ACTION_VIEW )
+void GoToDeviceBrowser( Uri uri );
+
+@Action( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE )
+void GetAPicture( RouteMixin mixin );  // mixin can be used to setType
+```
+
+
+## Creating a router
+Create a new interface class that extends AppRouter and declare your navigation methods. Any methods not decorated with annotations will be ignored.
 
 ```java
 public interface Router extends AppRouter {
 
     int REQUEST_CODE = 0x0003;
 
-    // A generic activity route
-    @Route( Activity = MainActivity.class )
-    void MainPage();
-
-    // an activity hosting a fragment
-    @Route( Activity = FragActivity.class, Fragment = ExampleFragment.class )
-    void FragmentRoute( @Nullable Bundle extras );
+    @Action( Action = Intent.ACTION_VIEW )
+    void ViewInBrowser( Uri uri );
 
     // an activity hosting a webview
     @Route( Activity = WebActivity.class, Url = "https://github.com/icarus-sullivan/approuter")
-    void VisitWebPage();
+    void VisitWebPage( RouteMixin mixin, Bundle extras );
 
-    // must include an AppCompatActivity as a parameter, without this the activity for result
-    // does not know where to return the result to
+    @Route( Activity = About.class, Fragment = AboutFragment.class )
+    void AboutUs();
+
+    // must include an AppCompatActivity as a parameter
     @ForResult( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
     void GetImageFromCamera( AppCompatActivity callingApp );
 
 }
 ```
 
-#### Route Options + Optional Params
-* Activity - a mandatory class that must extend from AppCompatActivity
-* Fragment - an optional fragment class extending support.v4.Fragment
-* Url - an optional URL that can be passed to the route activity
-* @param Bundle - a bundle of extra data to pass to the intent
-* @param RouteMixin - a mixin that can allow modification of intents before triggered
+### Instantiating your Router
+To instantiate your app, and make your routes global we need to create a class that extends Application.
 
-### ForResult + Optional Params
-* Activity - the activity requesting a result
-* RequestCode - the normal request code
-* @param Bundle
-* @param RouteMixin
-
-
-## RouteBuilder Usage
-RouteBuilder is a class that constructs our Router interface. You must use it as the Router constructor in order for it to work. RouteBuilder comes with two constructors, one with a mixin option, and one without.
-
-#### Without Mixins
-* Create a subclass of Application
-* Add a static instance of the Router interface we made earlier
-* Override the method onCreate() and construct the Router with RouterBuilder
-* Create a getter method to allow app-wide classes access to our Router.
+_example_
 ```java
 public class App extends Application {
 
-    private static Router router;
+    private static Router route;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        router = new RouteBuilder(getApplicationContext()).build(Router.class);
+        // create our router here, must use application context!!!
+        route = new RouteBuilder(getApplicationContext()).build(Router.class);
     }
 
-    public static Router getRouter() {
-        return router;
-    }
-
+    public static Router getRouter() { return route; }
 }
 ```
 
-#### With Mixins
-In case developers want to hook into the Intent creation process before the created routes are started, we can construct the Router above with an optional parameter in the RouteBuilder called a RouteMixin. Additionally we can add multiple mixins as long as the RouteBuilder class has not been built into our Router class.
+## Usage
+If all goes well you should be able to call your Router anywhere in the app.
 
+_example_
 ```java
-// modify our Router interface
-public interface Router extends AppRouter {
-    ...
-    String PROFILE_KEY = "profile_key";
-}
-
-// an example of a mixin --
-//              allowing modification of routes via Intent access
-router = new RouteBuilder(getApplicationContext(),
-        new RouteMixin() {
-            @Override
-            public void onNewIntent(Intent intent) {
-                // pass our user profile id to another activity/fragment
-                intent.putExtra( Router.PROFILE_KEY, "fae532g12d");
-            }
-        })
-        .build(Router.class);
-```
-An example of a RouteBuidler with multiple mixins
-
-```java
-RouteBuilder rb = new RouteBuilder( getApplicationContext());
-rb.registerMixins(
-    new RouteMixin() {
+// example route
+App.getRouter().VisitWebPage(new RouteMixin() {
         @Override
-        public void onNewIntent(Intent intent) {
-            // mixin 1
+        public boolean onNewIntent(Intent intent) {
+            // modify our intent as we pass through so we can re-use the webActivity
+            // adding an extra title, and overriding url
+            intent.putExtra(Router.TITLE_EXTRA, Router.WIKIPEDIA_LINK );
+            intent.putExtra(Router.EXTRA_URL, Router.WIKIPEDIA_LINK );
+            return true;
         }
-    },
-    new RouteMixin() {
-        @Override
-        public void onNewIntent(Intent intent) {
-            // mixin 2
-        }
-});
-
-router = rb.build(Router.class);
-```
+    }, null );
 
 
-## RoutableActivity
-If you want to receive data from the Routes easily you can choose to extend your AppCompatActivities with RoutableActivity instead. The only difference between the two is that RoutableActivity will generate the optional title for you, and adds a couple convenience methods for data retrieval.
+...
 
-Here is an example WebActivity using one of the convenience methods.
-
-```
-public class WebActivity extends RoutableActivity {
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_web);
-
-        WebView web = findViewById(R.id.webHost);
-        ...
-        // get route meta data -- in this case WEB
-        String metaRoute = (String) getRouteMeta( Meta.WEB );
-        web.loadUrl( metaRoute );
-    }
-
-}
-```
-
-Here is an example FragmentActivity.
-
-```
-public class FragmentActivity extends RoutableActivity {
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragments);
-
-        Fragment fragment = (Fragment) getRouteMeta( Meta.FRAGMENT );
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add( R.id.fragment_container, fragment )
-                .commit();
-
-		// extra string data from Route annotation
-	    Bundle extraData = getExtras();
-    }
-}
-```
-
-## Regular Activities
-If you don't extend RoutableActivity you can still retrieve our route information like you would any other data passed into an Intent.
-
-```java
-public class RegularActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // meta route will contain url or a fragment class canonical name
-        String url = getIntent().getStringExtra(AppRouter.META_ROUTE);
-
-        // if its a fragment the canonical name will be given
-        String fragmentClass = getIntent().getStringExtra(AppRouter.META_ROUTE);
-
-        // you can get it construct the fragment like this
-        Fragment fragment = Fragment.instantiate( getBaseContext(), fragmentClass );
-
-        // if they were passed as a parameter
-        Bundle extras = getIntent().getExtras();
-
-    }
-}
-```
-
-## Navigation to Routes
-
-Assuming Router was built statically within the App class like the above example. We can now navigate to any activity in the app
-from wherever we are in the app.
-
-```
-// getRouter statically, and navigate to MainPage
-App.getRouter().MainPage();
-
-// or launch the Source Code page
-App.getRouter().VisitWebPage();
-```
-You can now set a RouteMixin as a parameter in your route files and provide a mixin when calling a route. This will pass you
-a reference of the created intent before it is launched but at a navigation-invoccation level.
-
-```
-// Router modifications
-public class Router {
-
-    @Route( activity = MyActivity.class )
-    void MainPage( RouteMixin routeMixing );
-
-}
-
-// class level invoccation
-App.getRouter().MainPage( new RouteMixin() {
-    @Override
-    public void onNewIntent(Intent route ) {
-        // add data to created Intent before its called
-    }
-});
-
-
-```
-
-## Want a more granular mixin?
-
-
-
-## Class Specific Routes
-You can create routes any way you wish, making routes specific to activities, fragments, or any POJO. Here is an example using an Activity.
-```java
-public class RegularActivity extends AppCompatActivity {
-
-    private Router router;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-
-        router = (Router) new RouteBuilder( getBaseContext(), new RouteMixin() {
-            @Override
-            public void onNewIntent(Intent intent) {
-                // mixin data if desired
-            }
-        }).build( Router.class );
-    }
-}
+// view about us
+App.getRouter().AboutUs();
 ```
 
 ### Final Thoughts

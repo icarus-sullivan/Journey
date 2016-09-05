@@ -7,6 +7,11 @@ import android.content.Intent;
  */
 public interface RouteMixin {
 
-    void onNewIntent( Intent intent );
+    /**
+     * Return whether or not you want the intent to launch
+     * @param intent the current intent about to be handled
+     * @return true if you want the intent to launch, false if not
+     */
+    boolean onNewIntent( Intent intent );
 
 }
