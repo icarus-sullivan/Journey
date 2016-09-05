@@ -17,53 +17,40 @@ public abstract class IntentHolder<T> {
     /**
      * An intent to launch
      */
-    protected Intent mIntent;
+    protected Intent mIntent = null;
 
     /**
      * Interceptor for routes, can kill an intent prematurely
      */
-    protected RouteMixin mMixin;
+    protected RouteMixin mMixin = null;
 
     /**
      * Extra arguments passed via a bundle
      */
-    protected Bundle mArgs;
+    protected Bundle mArgs = null;
 
     /**
      * For normal routes, these can be considered meta routes
      */
-    protected String mUrl;
-    protected String mFragment;
+    protected String mUrl = null;
+    protected String mFragment = null;
 
     /**
      * For action based intents
      */
-    protected Uri mUri;
+    protected Uri mUri = Uri.EMPTY;
 
     /**
      * For activityForResult
      */
-    protected AppCompatActivity mCallingActivity;
-    protected int mRequestCode;
+    protected AppCompatActivity mCallingActivity = null;
+    protected int mRequestCode = AppRouter.NO_REQUEST;
 
     public IntentHolder( Object[] args ) {
         getArgs( args );
     }
 
-    private void clean() {
-        mIntent = null;
-        mMixin = null;
-        mArgs = null;
-        mFragment = null;
-        mRequestCode = -1;
-        mUri = Uri.EMPTY;
-        mUrl = AppRouter.EMPTY_URL;
-        mCallingActivity = null;
-    }
-
     public void getArgs( Object[] args ) {
-        clean();
-
         // ignore null arguments
         if( args == null ) return;
 
@@ -90,6 +77,12 @@ public abstract class IntentHolder<T> {
 
     abstract void onLaunchIntent();
 
+    /**
+     * Calling this will actually launch the intent, after calling onGatherExtras,
+     * and onLaunchIntent
+     * @param someT the annotation of the route
+     * @param mixins an optional collection of mixins from the Router
+     */
     public void launch(T someT, Collection<RouteMixin> mixins ) {
         onGatherExtras( someT );
 

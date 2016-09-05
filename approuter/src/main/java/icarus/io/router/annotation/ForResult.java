@@ -18,7 +18,7 @@ import icarus.io.router.api.AppRouter;
 public @interface ForResult {
 
     /**
-     * The activity the router will try to create an Intent wit
+     * The activity the router will try to create an Intent with
      */
     Class<? extends AppCompatActivity> Activity() default AppRouter.DummyActivity.class;
 
