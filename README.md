@@ -1,4 +1,4 @@
-[ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/Journey/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/Journey/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/journey/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/journey/_latestVersion)
 
 # Journey
 An Android app router, used to consolidate all app routes into one class definition. It's invention was sparked by an app I worked on with Josh Shepard where he implemented a Router for mutliple navigations.
@@ -11,7 +11,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:approuter:1.0.7'
+    compile 'com.github.icarus-sullivan:journey:1.0.7'
 }
 ```
 
@@ -21,7 +21,7 @@ If your using maven you can add this to your project.
 ```xml
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
-  <artifactId>approuter</artifactId>
+  <artifactId>journey</artifactId>
   <version>1.0.7</version>
   <type>pom</type>
 </dependency>
