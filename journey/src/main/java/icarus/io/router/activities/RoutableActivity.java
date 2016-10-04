@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import icarus.io.router.api.AppRouter;
+import icarus.io.router.api.Journey;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -16,7 +16,7 @@ public class RoutableActivity extends AppCompatActivity {
      * @return a url or null
      */
     public String getUrl() {
-        return getExtras().getString(AppRouter.EXTRA_URL);
+        return getExtras().getString(Journey.EXTRA_URL);
     }
 
     /**
@@ -24,7 +24,7 @@ public class RoutableActivity extends AppCompatActivity {
      * @return a fragment instance or null
      */
     public Fragment getFragment() {
-        String fragmentClass = getExtras().getString(AppRouter.EXTRA_FRAGMENT);
+        String fragmentClass = getExtras().getString(Journey.EXTRA_FRAGMENT);
 
         // null if no fragment found
         if( fragmentClass == null ) return null;
