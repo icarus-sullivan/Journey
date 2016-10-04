@@ -10,7 +10,7 @@ import java.lang.reflect.Proxy;
 import java.util.Vector;
 
 import icarus.io.router.annotation.Route;
-import icarus.io.router.mixin.RouteIntercepter;
+import icarus.io.router.intercepts.RouteIntercepter;
 
 /**
  * Created by chrissullivan on 5/10/16.

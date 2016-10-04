@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import java.util.Vector;
 
 import icarus.io.router.annotation.Route;
-import icarus.io.router.mixin.RouteIntercepter;
+import icarus.io.router.intercepts.RouteIntercepter;
 
 /**
  * Created by chris on 10/3/16.
