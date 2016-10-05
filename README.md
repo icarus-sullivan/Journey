@@ -28,14 +28,54 @@ If your using maven you can add this to your project.
 ```
 
 
-## How do I use it?
+## Getting Started with Annotations
 
-### Supported parameter types
+### Annotation @Extra
+In case you want to add some extras to your intent on-the-fly you can parameterize the arguments of your
+router to accept extras. The value given to @Extra will be used the key-value to be retrieved in your intent.
+
+_example_
+```java
+@Route( Activity = WebActivity.class )
+void WebActivity( @Extra("FALLBACK_URL") String fallback, @Extra("IDS") int[] vals, RouteIntercepter intercept );
+```
+
+Here is a list of accepted Intent arguments.
+
+```java
+ String.class
+ String[].class
+ boolean.class
+ boolean[].class
+ byte.class
+ byte[].class
+ char.class
+ char[].class
+ CharSequence[].class
+ CharSequence.class
+ double.class
+ double[].class
+ float.class
+ float[].class
+ int.class
+ int[].class
+ long.class
+ long[].class
+ Parcelable.class
+ Parcelable[].class
+ Serializable.class
+ short.class
+ short[].class
+ Bundle.class
+
+```
+
+#### Additional supported parameter types
 * RouteInterceptor - an intent interceptor, returning false in onNewIntent will cut the intent short, this is good for auth failure or conditional routes
 * Bundle - your standard bundle of arguments to pass in
 * (Action) Uri - the uri to include in an action, only used for Action based intents
 
-### @Route
+### Annotation @Route
 Route is an annotation that supports multiple values
 * A class extending android.support.v4.app.Fragment
 * A class extending android.support.v7.app.AppCompatActivity
@@ -54,76 +94,17 @@ If you are calling an activity for a result, you must provide a calling activity
 
 _example_
 ```java
+
+int REQUEST_CODE = 0x0003;
+
 // Not forResult
 @Route( Action = Intent.ACTION_VIEW )
 void GoToDeviceBrowser( Uri uri );
 
 @Route( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE)
-void GetAPicture( AppCompatActivity callingAct, RouteIntercepter intercept );  // mixin can be used to setType
+void GetAPicture( AppCompatActivity callingActivity );
 ```
 
-### @Extra
-In case you want to add some extras to your intent on-the-fly you can parameterize the arguments of your
-router to accept extras.
-
-_example_
-```java
-@Route( Activity = WebActivity.class )
-void WebActivity( @Extra("FALLBACK_URL") String fallback, @Extra("IDS") int[] vals, RouteIntercepter intercept );
-```
-
-Here is a list of accepted Intent arguments.
-
-```java
- String.class
-
- String[].class
-
- boolean.class
-
- boolean[].class
-
- byte.class
-
- byte[].class
-
- char.class
-
- char[].class
-
- CharSequence[].class
-
- CharSequence.class
-
- double.class
-
- double[].class
-
- float.class
-
- float[].class
-
- int.class
-
- int[].class
-
- long.class
-
- long[].class
-
- Parcelable.class
-
- Parcelable[].class
-
- Serializable.class
-
- short.class
-
- short[].class
-
- Bundle.class
-
-```
 
 ## Creating a router
 Create a new interface class and declare your navigation methods. Any methods not decorated with annotations will be ignored.
@@ -132,6 +113,9 @@ Create a new interface class and declare your navigation methods. Any methods no
 public interface Router {
 
     int REQUEST_CODE = 0x0003;
+
+	@Route( Activity = SplashActivity.class )
+	void GoToSplash( @Extra("FIRST_TIME") boolean firstLaunch );
 
     @Route( Action = Intent.ACTION_VIEW )
     void ViewInBrowser( Uri uri );
