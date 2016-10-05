@@ -2,9 +2,6 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-group = 'com.github.icarus-sullivan'
-version = '1.0.7'
-
 ext {
     CapitalName = 'Journey'
     Name = 'journey'
@@ -12,9 +9,14 @@ ext {
     Website = 'https://github.com/icarus-sullivan/Journey'
     Description = 'An Android app router, used to consolidate all app routes into one class definition.'
     Version = '1.0.7'
+    GroupId = 'com.github.icarus-sullivan'
     ArtifactId = 'journey'
     Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
 }
+
+group = "$GroupId"
+version = "$Version"
+
 
 android {
     compileSdkVersion 23

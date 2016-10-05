@@ -11,7 +11,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:journey:1.0.7'
+    compile 'com.github.icarus-sullivan:journey:1.0.8'
 }
 ```
 
@@ -22,7 +22,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>journey</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.8</version>
   <type>pom</type>
 </dependency>
 ```
@@ -55,10 +55,10 @@ If you are calling an activity for a result, you must provide a calling activity
 _example_
 ```java
 // Not forResult
-@Action( Action = Intent.ACTION_VIEW )
+@Route( Action = Intent.ACTION_VIEW )
 void GoToDeviceBrowser( Uri uri );
 
-@Action( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE)
+@Route( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE)
 void GetAPicture( AppCompatActivity callingAct, RouteIntercepter intercept );  // mixin can be used to setType
 ```
 
@@ -71,7 +71,7 @@ public interface Router {
 
     int REQUEST_CODE = 0x0003;
 
-    @Action( Action = Intent.ACTION_VIEW )
+    @Route( Action = Intent.ACTION_VIEW )
     void ViewInBrowser( Uri uri );
 
     // an activity hosting a webview
@@ -82,7 +82,7 @@ public interface Router {
     void AboutUs();
 
     // must include an AppCompatActivity as a parameter
-    @ForResult( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
+    @Route( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
     void GetImageFromCamera( AppCompatActivity callingApp );
 
 }
