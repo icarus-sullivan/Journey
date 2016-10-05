@@ -11,7 +11,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:journey:1.0.10'
+    compile 'com.github.icarus-sullivan:journey:1.1.0'
 }
 ```
 
@@ -22,7 +22,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>journey</artifactId>
-  <version>1.0.10</version>
+  <version>1.1.0</version>
   <type>pom</type>
 </dependency>
 ```
@@ -62,6 +62,68 @@ void GoToDeviceBrowser( Uri uri );
 void GetAPicture( AppCompatActivity callingAct, RouteIntercepter intercept );  // mixin can be used to setType
 ```
 
+### @Extra
+In case you want to add some extras to your intent on-the-fly you can parameterize the arguments of your
+router to accept extras.
+
+_example_
+```java
+@Route( Activity = WebActivity.class )
+void WebActivity( @Extra("FALLBACK_URL") String fallback, @Extra("IDS") int[] vals, RouteIntercepter intercept );
+```
+
+Here is a list of accepted Intent arguments.
+
+```java
+ String.class
+
+ String[].class
+
+ boolean.class
+
+ boolean[].class
+
+ byte.class
+
+ byte[].class
+
+ char.class
+
+ char[].class
+
+ CharSequence[].class
+
+ CharSequence.class
+
+ double.class
+
+ double[].class
+
+ float.class
+
+ float[].class
+
+ int.class
+
+ int[].class
+
+ long.class
+
+ long[].class
+
+ Parcelable.class
+
+ Parcelable[].class
+
+ Serializable.class
+
+ short.class
+
+ short[].class
+
+ Bundle.class
+
+```
 
 ## Creating a router
 Create a new interface class and declare your navigation methods. Any methods not decorated with annotations will be ignored.

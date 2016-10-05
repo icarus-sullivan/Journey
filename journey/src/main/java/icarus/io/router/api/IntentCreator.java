@@ -107,6 +107,13 @@ public class IntentCreator {
         return this;
     }
 
+    public IntentCreator addInterceptor( RouteIntercepter inter ) {
+        if( !intercepts.contains( inter ) ) {
+            intercepts.add( inter );
+        }
+        return this;
+    }
+
     public IntentCreator addInterceptors( Vector<RouteIntercepter> interOther ) {
         intercepts.addAll( interOther );
         return this;
