@@ -1,0 +1,80 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: "maven-publish"
+
+ext {
+    CapitalName = 'Journey'
+    Name = 'journey'
+    GithubRepo = 'icarus-sullivan/Journey'
+    SourceUrl = 'https://github.com/icarus-sullivan/Journey.git'
+    Website = 'https://github.com/icarus-sullivan/Journey'
+    Description = 'An Android app router, used to consolidate all app routes into one class definition.'
+    Version = '1.0.9'
+    GroupId = 'com.github.icarus-sullivan'
+    ArtifactId = 'journey'
+    Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "source"
+}
+
+publishing {
+    publications {
+        myPub(MavenPublication) {
+            groupId "$GroupId"
+            version "$Version"
+            artifactId "$ArtifactId"
+            artifact sourceJar
+            artifact "$buildDir/outputs/aar/$Name-release.aar"
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    if(it.group != null && (it.name != null || "unspecified".equals(it.name)) && it.version != null)
+                    {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "https://dl.bintray.com/icarus-sullivan/maven"
+        }
+    }
+}
+
+bintray {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    user = properties.getProperty('bintray.user')
+    key = properties.getProperty('bintray.apikey')
+    publications = ['myPub']
+
+    dryRun = false // Whether to run this as dry-run, without deploying
+    publish = true // Whether version should be auto published after an upload
+    override = true // Whether to override version artifacts already published
+    pkg {
+        repo = 'maven'
+        name = "$Name"
+        userOrg = user
+        licenses = ['Apache-2.0']
+        vcsUrl = "$SourceUrl"
+        version {
+            name = "$Version"
+            desc = "$Description"
+            released  = new Date()
+            vcsTag = "$Version"
+        }
+        labels = project.ext.Labels
+        publicDownloadNumbers = true
+
+        githubRepo = "$GithubRepo"
+        githubReleaseNotesFile = 'README.md'
+    }
+}

@@ -1,22 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
-
-ext {
-    CapitalName = 'Journey'
-    Name = 'journey'
-    SourceUrl = 'https://github.com/icarus-sullivan/Journey.git'
-    Website = 'https://github.com/icarus-sullivan/Journey'
-    Description = 'An Android app router, used to consolidate all app routes into one class definition.'
-    Version = '1.0.8'
-    GroupId = 'com.github.icarus-sullivan'
-    ArtifactId = 'journey'
-    Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
-}
-
-group = "$GroupId"
-version = "$Version"
-
+apply from: 'maven-publish.gradle'
 
 android {
     compileSdkVersion 23
@@ -40,62 +23,4 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
-}
-
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            name project.ext.CapitalName
-            description project.ext.Description
-            url project.ext.Website
-
-            packaging 'aar'
-            groupId 'com.github.icarus-sullivan'
-            artifactId project.ext.ArtifactId
-            version project.ext.Version
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                connection project.ext.SourceUrl
-                url project.ext.Website
-
-            }
-            developers {
-                developer {
-                    name 'Chris Sullivan'
-                    id 'icarus-sullivan'
-                    email 'chrissullivan.dev@gmail.com'
-                }
-            }
-        }
-    }
-}
-
-bintray {
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    user = properties.getProperty('bintray.user')
-    key = properties.getProperty('bintray.apikey')
-    configurations = ['archives']
-    pkg {
-        repo = 'maven'
-        name = project.ext.Name
-        userOrg = user
-        licenses = ['Apache-2.0']
-        vcsUrl = project.ext.SourceUrl
-        version {
-            name = project.ext.Version
-            desc = project.ext.Description
-            released  = new Date()
-            vcsTag = project.ext.Version
-        }
-        labels = project.ext.Labels
-        publicDownloadNumbers = true
-    }
 }
