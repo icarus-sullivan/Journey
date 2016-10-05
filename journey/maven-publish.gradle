@@ -8,7 +8,7 @@ ext {
     SourceUrl = 'https://github.com/icarus-sullivan/Journey.git'
     Website = 'https://github.com/icarus-sullivan/Journey'
     Description = 'An Android app router, used to consolidate all app routes into one class definition.'
-    Version = '1.0.9'
+    Version = '1.0.10'
     GroupId = 'com.github.icarus-sullivan'
     ArtifactId = 'journey'
     Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
@@ -58,7 +58,6 @@ bintray {
 
     dryRun = false // Whether to run this as dry-run, without deploying
     publish = true // Whether version should be auto published after an upload
-    override = true // Whether to override version artifacts already published
     pkg {
         repo = 'maven'
         name = "$Name"
