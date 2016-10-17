@@ -1,3 +1,5 @@
+
+
 [ ![Download](https://api.bintray.com/packages/icarus-sullivan/maven/journey/images/download.svg) ](https://bintray.com/icarus-sullivan/maven/journey/_latestVersion)
 
 # Journey
@@ -11,7 +13,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:journey:1.1.0'
+    compile 'com.github.icarus-sullivan:journey:1.1.1'
 }
 ```
 
@@ -22,7 +24,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>journey</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <type>pom</type>
 </dependency>
 ```
@@ -89,6 +91,33 @@ _example_
 void GoToDomain( RouteInterceptor intercept, Bundle extras );
 ```
 
+### Annotation @Extras
+Extras is an annotation can that be used to pass in extras constants into your navigation
+* An integer array
+
+_example_
+```java
+@Extras({ State.NEEDS_AUTH.ordinal(), State.CLOSE_ON_FAILURE.ordinal()})
+@Route( Activity = BouncyCastleActivity.class )
+void BouncyCastle( RouteInterceptor intercept );
+
+...
+
+App.getRouter().BouncyCastle( new RouteIntercepter() {
+	   @Override
+	    public boolean onRoute(Intent intent) {
+	        int[] list = intent.getIntArrayExtra(Journey.EXTRA_LIST);
+	        for( int item : list ) {
+				if( item == State.NEEDS_AUTH.ordinal() &&
+							!User.isAuthenticated() ) {
+					return false;
+				}
+			}
+		    return true;
+	    }
+	});
+```
+
 ### Activities for Result
 If you are calling an activity for a result, you must provide a calling activity and a requestCode.
 
@@ -101,6 +130,7 @@ int REQUEST_CODE = 0x0003;
 @Route( Action = Intent.ACTION_VIEW )
 void GoToDeviceBrowser( Uri uri );
 
+// For Result
 @Route( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE)
 void GetAPicture( AppCompatActivity callingActivity );
 ```
@@ -131,6 +161,29 @@ public interface Router {
     @Route( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
     void GetImageFromCamera( AppCompatActivity callingApp );
 
+
+	class Instance {
+
+		static Router inst;
+
+		public static void create( Context app ) {
+			// can provide chained RouteInterceptors for all Routes
+			inst = new Journey.Builder(app)
+                .addInterceptors(new RouteIntercepter() {
+                    @Override
+                    public boolean onRoute(Intent intent) {
+                        // check auth for user
+                        return User.isAuthenticated();
+                    }
+                })
+                .create(Router.class);
+		}
+
+		public static Router get() {
+			return inst;
+		}
+
+	}
 }
 ```
 
@@ -141,28 +194,13 @@ _example_
 ```java
 public class App extends Application {
 
-    private static Router route;
-
     @Override
     public void onCreate() {
         super.onCreate();
 
         // create our router here, must use application context!!!
-
-		// can provide chained RouteInterceptors for all Routes
-        route = new Journey.Builder(getApplicationContext())
-                .addInterceptors(new RouteIntercepter() {
-                    @Override
-                    public boolean onRoute(Intent intent) {
-                        // check auth for user
-                        return User.isAuthenticated();
-                    }
-                })
-                .create(Router.class);
+		Router.Instance.create( getApplicationContext() );
     }
-
-	// Make our Router easier to obtain
-    public static Router getRouter() { return route; }
 }
 ```
 
@@ -172,7 +210,7 @@ If all goes well you should be able to call your Router anywhere in the app.
 _example_
 ```java
 // example route
-App.getRouter().VisitWebPage(new RouteInterceptor() {
+Router.Instance.get().VisitWebPage(new RouteInterceptor() {
         @Override
         public boolean onRoute(Intent intent) {
             // modify our intent as we pass through so we can re-use the webActivity

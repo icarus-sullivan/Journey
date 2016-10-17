@@ -15,6 +15,7 @@ import java.lang.reflect.Proxy;
 import java.util.Vector;
 
 import icarus.io.router.annotation.Extra;
+import icarus.io.router.annotation.Extras;
 import icarus.io.router.annotation.Route;
 import icarus.io.router.intercepts.RouteIntercepter;
 
@@ -26,6 +27,8 @@ public class Journey implements InvocationHandler {
     public static final String EXTRA_URL = "_url_";
 
     public static final String EXTRA_FRAGMENT = "_fragment_";
+
+    public static final String EXTRA_LIST = "_list_extras_";
 
     public static final String NO_ACTION = "";
 
@@ -52,6 +55,17 @@ public class Journey implements InvocationHandler {
         Route route = method.getAnnotation(Route.class);
         IntentCreator creator = new IntentCreator( appContext, args )
                 .addInterceptors( interceptors )
+                .addInterceptor(new RouteIntercepter() {
+                    @Override
+                    public boolean onRoute(Intent intent) {
+                        // pass in list of values
+                        if( method.isAnnotationPresent(Extras.class)) {
+                            Extras extras = method.getAnnotation(Extras.class);
+                            intent.putExtra(EXTRA_LIST, extras.value());
+                        }
+                        return true;
+                    }
+                })
                 .addInterceptor(new RouteIntercepter() {
                     @Override
                     public boolean onRoute(Intent intent) {
@@ -83,7 +97,10 @@ public class Journey implements InvocationHandler {
             if( annotation instanceof Extra ) {
                 Extra extra = (Extra) annotation;
                 String name = extra.value();
-                if( clz.isAssignableFrom(String.class)) {
+                if( arg == null ) {
+                    // no-op
+                }
+                else if( clz.isAssignableFrom(String.class)) {
                     intent.putExtra(name, (String)arg);
                 }
                 else if( clz.isAssignableFrom(String[].class)) {
