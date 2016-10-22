@@ -118,7 +118,7 @@ public class WebActivity extends RoutableActivity {
         switch( item.getItemId() ) {
             case android.R.id.home:
                 if( !navigatedInWebPage() ) {
-                    Router.navigateTo().MainActivityWithExtras( new int[]{1, 2, 3} );
+                    Router.navigateTo.MainActivityWithExtras( new int[]{1, 2, 3} );
                     finish();
                 }
                 return false;

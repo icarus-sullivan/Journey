@@ -19,7 +19,7 @@ import mutexthreads.io.examples.activities.WebActivity;
  */
 public class Router {
 
-    private static Instance inst;
+    public static Instance navigateTo;
 
     public static final int REQUEST_VIEW = 0x0002;
 
@@ -28,12 +28,8 @@ public class Router {
     public static final String githubPage = "https://github.com/icarus-sullivan/Journey";
 
     public static void create( Context app ) {
-        inst = new Journey.Builder( app )
+        navigateTo = new Journey.Builder( app )
                 .create( Instance.class );
-    }
-
-    public static Instance navigateTo() {
-        return inst;
     }
 
     public interface Instance {

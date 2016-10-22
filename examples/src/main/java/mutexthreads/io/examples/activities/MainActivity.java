@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch( v.getId() ) {
             case R.id.githubpage:
-                Router.navigateTo().GoToGitPage(new RouteExtraInterceptor() {
+                Router.navigateTo.GoToGitPage(new RouteExtraInterceptor() {
                     @Override
                     public boolean onRouteExtras(Intent intent, String[] extras) {
                         // example of RouteExtras
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 break;
             case R.id.failure:
-                Router.navigateTo().MainActivity(new RouteInterceptor() {
+                Router.navigateTo.MainActivity(new RouteInterceptor() {
                     @Override
                     public boolean onRoute(Intent intent) {
                         Toast.makeText( getBaseContext(), "intercept caused failure", Toast.LENGTH_SHORT).show();
@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 break;
             case R.id.forresult:
-                Router.navigateTo().GetContent( this, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
+                Router.navigateTo.GetContent( this, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
                 break;
             case R.id.intercept:
-                Router.navigateTo().MainActivity(new RouteInterceptor() {
+                Router.navigateTo.MainActivity(new RouteInterceptor() {
                     @Override
                     public boolean onRoute(Intent intent) {
                         Toast.makeText(getBaseContext(), "intercept was handled", Toast.LENGTH_SHORT).show();
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 break;
             case R.id.action:
-                Router.navigateTo().ViewInBrowser(Uri.parse(Router.githubPage));
+                Router.navigateTo.ViewInBrowser(Uri.parse(Router.githubPage));
                 break;
         }
     }

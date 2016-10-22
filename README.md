@@ -149,19 +149,14 @@ Create a new class with and inner interface class and declare your navigation me
 public class Router {
 
 	// our router instance
-    private static Instance inst;
+    public static Instance navigateTo;
 
 	...
 
 	// convenience method for creating the router
     public static void create( Context app ) {
-        inst = new Journey.Builder( app )
+        navigateTo = new Journey.Builder( app )
                 .create( Instance.class );
-    }
-
-	// convenience method for getting the router
-    public static Instance navigateTo() {
-        return inst;
     }
 
 	// Our actual router interface here
@@ -198,7 +193,7 @@ If all goes well you should be able to call your Router anywhere in the app.
 _example_
 ```java
 // example route
-Router.navigateTo().VisitWebPage(new RouteInterceptor() {
+Router.navigateTo.VisitWebPage(new RouteInterceptor() {
         @Override
         public boolean onRoute(Intent intent) {
             // modify our intent as we pass through so we can re-use the webActivity
@@ -213,7 +208,7 @@ Router.navigateTo().VisitWebPage(new RouteInterceptor() {
 ...
 
 // view about us ativity -- can pass in null values for expected parameters
-Router.navigateTo().MainActivity(null);
+Router.navigateTo.MainActivity(null);
 ```
 
 ### Final Thoughts
