@@ -17,7 +17,7 @@ import java.util.Vector;
 import icarus.io.router.annotation.Extra;
 import icarus.io.router.annotation.Extras;
 import icarus.io.router.annotation.Route;
-import icarus.io.router.intercepts.RouteIntercepter;
+import icarus.io.router.intercepts.RouteInterceptor;
 
 /**
  * Created by chrissullivan on 5/10/16.
@@ -44,9 +44,9 @@ public class Journey implements InvocationHandler {
     public static final String EMPTY_URL = "";
 
     private Context appContext;
-    private Vector<RouteIntercepter> interceptors = new Vector<>();
+    private Vector<RouteInterceptor> interceptors = new Vector<>();
 
-    private Journey( Context context, Vector<RouteIntercepter> interceptors ) {
+    private Journey( Context context, Vector<RouteInterceptor> interceptors ) {
         this.appContext = context;
         this.interceptors.addAll( interceptors );
     }
@@ -54,8 +54,7 @@ public class Journey implements InvocationHandler {
     private void handleRoute(final Method method, final Object[] args) {
         Route route = method.getAnnotation(Route.class);
         IntentCreator creator = new IntentCreator( appContext, args )
-                .addInterceptors( interceptors )
-                .addInterceptor(new RouteIntercepter() {
+                .addInterceptor(new RouteInterceptor() {
                     @Override
                     public boolean onRoute(Intent intent) {
                         // pass in list of values
@@ -66,18 +65,21 @@ public class Journey implements InvocationHandler {
                         return true;
                     }
                 })
-                .addInterceptor(new RouteIntercepter() {
+                .addInterceptor(new RouteInterceptor() {
                     @Override
                     public boolean onRoute(Intent intent) {
                         if( args != null ) {
                             Annotation[][] annotations = method.getParameterAnnotations();
                             for( int i = 0; i < args.length; i++ ) {
+                                if( args[i] == null ) continue;         // igore null params
+
                                 handleAnnotations(intent, annotations[i], args[i]);
                             }
                         }
                         return true;
                     }
                 })
+                .addInterceptors( interceptors )
                 .addRoute(route);
         creator.create();
     }
@@ -202,14 +204,14 @@ public class Journey implements InvocationHandler {
     public static class Builder {
 
         private Context context;
-        private Vector<RouteIntercepter> interceptors = new Vector<>();
+        private Vector<RouteInterceptor> interceptors = new Vector<>();
 
         public Builder(Context app) {
             this.context = app;
         }
 
-        public Builder addInterceptors( RouteIntercepter... register ) {
-            for( RouteIntercepter mixin : register ) {
+        public Builder addInterceptors( RouteInterceptor... register ) {
+            for( RouteInterceptor mixin : register ) {
                 if( !interceptors.contains( mixin ) ) {
                     interceptors.add( mixin );
                 }

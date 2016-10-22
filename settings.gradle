@@ -1,1 +1,1 @@
-include ':journey'
+include ':journey', ':examples'

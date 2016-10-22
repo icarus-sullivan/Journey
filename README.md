@@ -13,7 +13,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:journey:1.1.1'
+    compile 'com.github.icarus-sullivan:journey:1.1.2'
 }
 ```
 
@@ -24,7 +24,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>journey</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <type>pom</type>
 </dependency>
 ```
@@ -32,14 +32,38 @@ If your using maven you can add this to your project.
 
 ## Getting Started with Annotations
 
+### Annotation @Route
+Route is an annotation that supports multiple values
+* A class extending android.support.v4.app.Fragment
+* A class extending android.support.v7.app.AppCompatActivity
+* A url {String}
+* An Intent Action {String}
+* A Request Code
+
+_example_
+```java
+public static final String githubPage = "https://github.com/icarus-sullivan/Journey";
+
+...
+
+@Route( Activity = WebActivity.class, Url = githubPage )
+void GoToGitPage( RouteExtraInterceptor interceptor );
+```
+
 ### Annotation @Extra
 In case you want to add some extras to your intent on-the-fly you can parameterize the arguments of your
 router to accept extras. The value given to @Extra will be used the key-value to be retrieved in your intent.
 
 _example_
 ```java
-@Route( Activity = WebActivity.class )
-void WebActivity( @Extra("FALLBACK_URL") String fallback, @Extra("IDS") int[] vals, RouteIntercepter intercept );
+
+// intent extra key
+public static final String IDS = "ids";
+
+...
+
+@Route(Activity = MainActivity.class)
+void MainActivityWithExtras(@Extra(IDS) int[] ids );
 ```
 
 Here is a list of accepted Intent arguments.
@@ -77,113 +101,77 @@ Here is a list of accepted Intent arguments.
 * Bundle - your standard bundle of arguments to pass in
 * (Action) Uri - the uri to include in an action, only used for Action based intents
 
-### Annotation @Route
-Route is an annotation that supports multiple values
-* A class extending android.support.v4.app.Fragment
-* A class extending android.support.v7.app.AppCompatActivity
-* A url {String}
-* An Intent Action {String}
-* A Request Code
-
-_example_
-```java
-@Route( Activity = WebViewActivity.class, Fragment = WebViewFragment.class, Url = "http://domain.com" )
-void GoToDomain( RouteInterceptor intercept, Bundle extras );
-```
 
 ### Annotation @Extras
-Extras is an annotation can that be used to pass in extras constants into your navigation
-* An integer array
+Extras is an annotation can that be used to pass an array of Strings during an intent and can be viewed with the interceptor RouteExtraInterceptor.
 
 _example_
 ```java
-@Extras({ State.NEEDS_AUTH.ordinal(), State.CLOSE_ON_FAILURE.ordinal()})
-@Route( Activity = BouncyCastleActivity.class )
-void BouncyCastle( RouteInterceptor intercept );
-
+@Extras({"NeedsAuth"})
+@Route( Activity = WebActivity.class, Url = githubPage )
+void GoToGitPage( RouteExtraInterceptor interceptor );
 ...
 
-App.getRouter().BouncyCastle( new RouteIntercepter() {
-	   @Override
-	    public boolean onRoute(Intent intent) {
-	        int[] list = intent.getIntArrayExtra(Journey.EXTRA_LIST);
-	        for( int item : list ) {
-				if( item == State.NEEDS_AUTH.ordinal() &&
-							!User.isAuthenticated() ) {
-					return false;
-				}
-			}
-		    return true;
-	    }
+Router.navigateTo().GoToGitPage(new RouteExtraInterceptor() {
+	@Override
+	 public boolean onRouteExtras(Intent intent, String[] extras) {
+	     // example of RouteExtras
+	     String checkAuth = "NeedsAuth";
+	     for( String extra : extras ) {
+	         if( extra.equalsIgnoreCase( checkAuth ) ) {
+				// check auth and return false if no auth exists
+	         }
+	     }
+
+	     return true;
+	 }
 	});
 ```
 
 ### Activities for Result
-If you are calling an activity for a result, you must provide a calling activity and a requestCode.
+If you are calling an activity for a result, you must provide a calling activity, uri, and a requestCode.
 
 _example_
 ```java
+public static final int REQUEST_VIEW = 0x0002;
 
-int REQUEST_CODE = 0x0003;
+...
 
-// Not forResult
-@Route( Action = Intent.ACTION_VIEW )
-void GoToDeviceBrowser( Uri uri );
-
-// For Result
-@Route( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_CODE)
-void GetAPicture( AppCompatActivity callingActivity );
+@Route( Action = Intent.ACTION_GET_CONTENT, RequestCode = REQUEST_VIEW )
+void GetContent(AppCompatActivity callingAct, Uri uri );
 ```
 
 
 ## Creating a router
-Create a new interface class and declare your navigation methods. Any methods not decorated with annotations will be ignored.
+Create a new class with and inner interface class and declare your navigation methods within the interface. Any methods not decorated with annotations will be ignored.
 
 ```java
-public interface Router {
+public class Router {
 
-    int REQUEST_CODE = 0x0003;
+	// our router instance
+    private static Instance inst;
 
-	@Route( Activity = SplashActivity.class )
-	void GoToSplash( @Extra("FIRST_TIME") boolean firstLaunch );
+	...
 
-    @Route( Action = Intent.ACTION_VIEW )
-    void ViewInBrowser( Uri uri );
+	// convenience method for creating the router
+    public static void create( Context app ) {
+        inst = new Journey.Builder( app )
+                .create( Instance.class );
+    }
 
-    // an activity hosting a webview
-    @Route( Activity = WebActivity.class, Url = "https://github.com/icarus-sullivan/approuter")
-    void VisitWebPage( RouteInterceptor intercept, Bundle extras );
+	// convenience method for getting the router
+    public static Instance navigateTo() {
+        return inst;
+    }
 
-    @Route( Activity = About.class, Fragment = AboutFragment.class )
-    void AboutUs();
+	// Our actual router interface here
+    public interface Instance {
 
-    // must include an AppCompatActivity as a parameter
-    @Route( Activity = CameraActivity.class, RequestCode = REQUEST_CODE )
-    void GetImageFromCamera( AppCompatActivity callingApp );
+        @Route( Action = Intent.ACTION_VIEW )
+        void ViewInBrowser(Uri uri );
 
+    }
 
-	class Instance {
-
-		static Router inst;
-
-		public static void create( Context app ) {
-			// can provide chained RouteInterceptors for all Routes
-			inst = new Journey.Builder(app)
-                .addInterceptors(new RouteIntercepter() {
-                    @Override
-                    public boolean onRoute(Intent intent) {
-                        // check auth for user
-                        return User.isAuthenticated();
-                    }
-                })
-                .create(Router.class);
-		}
-
-		public static Router get() {
-			return inst;
-		}
-
-	}
 }
 ```
 
@@ -199,7 +187,7 @@ public class App extends Application {
         super.onCreate();
 
         // create our router here, must use application context!!!
-		Router.Instance.create( getApplicationContext() );
+		Router.create( getApplicationContext() );
     }
 }
 ```
@@ -210,7 +198,7 @@ If all goes well you should be able to call your Router anywhere in the app.
 _example_
 ```java
 // example route
-Router.Instance.get().VisitWebPage(new RouteInterceptor() {
+Router.navigateTo().VisitWebPage(new RouteInterceptor() {
         @Override
         public boolean onRoute(Intent intent) {
             // modify our intent as we pass through so we can re-use the webActivity
@@ -224,8 +212,8 @@ Router.Instance.get().VisitWebPage(new RouteInterceptor() {
 
 ...
 
-// view about us
-App.getRouter().AboutUs();
+// view about us ativity -- can pass in null values for expected parameters
+Router.navigateTo().MainActivity(null);
 ```
 
 ### Final Thoughts

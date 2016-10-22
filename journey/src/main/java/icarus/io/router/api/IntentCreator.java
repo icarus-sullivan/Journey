@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import java.util.Vector;
 
 import icarus.io.router.annotation.Route;
-import icarus.io.router.intercepts.RouteIntercepter;
+import icarus.io.router.intercepts.RouteInterceptor;
 
 /**
  * Created by chris on 10/3/16.
@@ -19,7 +19,7 @@ public class IntentCreator {
     /**
      * Interceptor for routes, can kill an intent prematurely
      */
-    protected Vector<RouteIntercepter> intercepts = new Vector<>();
+    protected Vector<RouteInterceptor> intercepts = new Vector<>();
 
     /**
      * For action based intents
@@ -57,6 +57,8 @@ public class IntentCreator {
         if( args == null ) return;
 
         for( Object o : args ) {
+            if( o == null ) continue;       // ignore null params
+
             if( o instanceof Uri ) {
                 uri = (Uri) o;
             } else
@@ -65,8 +67,8 @@ public class IntentCreator {
                 callingFrom = (AppCompatActivity) o;
             }
 
-            if( o instanceof RouteIntercepter) {
-                intercepts.add((RouteIntercepter)o);
+            if( o instanceof RouteInterceptor) {
+                intercepts.add((RouteInterceptor)o);
             }
 
             if( o instanceof Bundle )  {
@@ -107,15 +109,15 @@ public class IntentCreator {
         return this;
     }
 
-    public IntentCreator addInterceptor( RouteIntercepter inter ) {
+    public IntentCreator addInterceptor( RouteInterceptor inter ) {
         if( !intercepts.contains( inter ) ) {
-            intercepts.add( inter );
+            intercepts.add( 0, inter );
         }
         return this;
     }
 
-    public IntentCreator addInterceptors( Vector<RouteIntercepter> interOther ) {
-        intercepts.addAll( interOther );
+    public IntentCreator addInterceptors( Vector<RouteInterceptor> interOther ) {
+        intercepts.addAll( 0, interOther );
         return this;
     }
 
@@ -126,7 +128,7 @@ public class IntentCreator {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // check if intercepts want to continue
-        for( RouteIntercepter intercept : intercepts ) {
+        for( RouteInterceptor intercept : intercepts ) {
             if( !intercept.onRoute( intent ) ) {
                return;
             }
