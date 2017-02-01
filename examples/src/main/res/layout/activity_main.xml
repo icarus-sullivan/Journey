@@ -50,6 +50,14 @@
         android:textColor="#333333"
         android:text="Intercept" />
 
+    <TextView
+        android:id="@+id/serialize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textColor="#333333"
+        android:text="Serializeable" />
+
 
 
 </LinearLayout>

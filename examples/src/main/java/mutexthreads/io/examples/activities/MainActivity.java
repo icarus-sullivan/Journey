@@ -5,14 +5,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-import icarus.io.router.intercepts.RouteExtraInterceptor;
+import icarus.io.router.intercepts.RouteConditionInterceptor;
 import icarus.io.router.intercepts.RouteInterceptor;
 import mutexthreads.io.examples.R;
 import mutexthreads.io.examples.Router;
@@ -29,7 +28,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 R.id.failure,
                 R.id.forresult,
                 R.id.intercept,
-                R.id.action
+                R.id.action,
+                R.id.serialize
         );
     }
 
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch( v.getId() ) {
             case R.id.githubpage:
-                Router.navigateTo.GoToGitPage(new RouteExtraInterceptor() {
+                Router.navigateTo.GoToGitPage(new RouteConditionInterceptor() {
                     @Override
                     public boolean onRouteExtras(Intent intent, String[] extras) {
                         // example of RouteExtras
@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.action:
                 Router.navigateTo.ViewInBrowser(Uri.parse(Router.githubPage));
                 break;
+            case R.id.serialize:
+                Router.navigateTo.MainActivitySerializable( new DummyObject() );
+                break;
         }
     }
 
@@ -95,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else {
             Toast.makeText(getBaseContext(), "onNewIntent", Toast.LENGTH_SHORT).show();
+        }
+
+        Serializable ser = intent.getSerializableExtra("Serialize");
+        if( ser != null ) {
+            Toast.makeText(getBaseContext(), "Serialized " + ser.toString(), Toast.LENGTH_SHORT).show();
         }
     }
 

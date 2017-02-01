@@ -13,7 +13,7 @@ If your using Android Studio, add this to your apps build.gradle
 
 ```javascript
 dependencies {
-    compile 'com.github.icarus-sullivan:journey:1.1.2'
+    compile 'com.github.icarus-sullivan:journey:1.1.3'
 }
 ```
 
@@ -24,7 +24,7 @@ If your using maven you can add this to your project.
 <dependency>
   <groupId>com.github.icarus-sullivan</groupId>
   <artifactId>journey</artifactId>
-  <version>1.1.2</version>
+  <version>1.1.3</version>
   <type>pom</type>
 </dependency>
 ```
@@ -102,23 +102,25 @@ Here is a list of accepted Intent arguments.
 * (Action) Uri - the uri to include in an action, only used for Action based intents
 
 
-### Annotation @Extras
-Extras is an annotation can that be used to pass an array of Strings during an intent and can be viewed with the interceptor RouteExtraInterceptor.
+### Annotation @Conditions
+Conditions is an annotation can that be used to pass an array of Strings during an intent and can be viewed with the interceptor RouteConditionInterceptor to check for extra string conditions.
 
 _example_
 ```java
-@Extras({"NeedsAuth"})
+
+public static final String AUTH = "NeedsAuth";
+
+@Conditions({ AUTH })
 @Route( Activity = WebActivity.class, Url = githubPage )
-void GoToGitPage( RouteExtraInterceptor interceptor );
+void GoToGitPage( RouteConditionInterceptor interceptor );
 ...
 
-Router.navigateTo().GoToGitPage(new RouteExtraInterceptor() {
+Router.navigateTo().GoToGitPage(new RouteConditionInterceptor() {
 	@Override
-	 public boolean onRouteExtras(Intent intent, String[] extras) {
+	 public boolean onRouteExtras(Intent intent, String[] conditions) {
 	     // example of RouteExtras
-	     String checkAuth = "NeedsAuth";
-	     for( String extra : extras ) {
-	         if( extra.equalsIgnoreCase( checkAuth ) ) {
+	     for( String condition : conditions ) {
+	         if( AUTH.equalsIgnoreCase( condition ) ) {
 				// check auth and return false if no auth exists
 	         }
 	     }

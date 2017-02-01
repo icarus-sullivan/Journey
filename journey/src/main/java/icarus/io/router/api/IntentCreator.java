@@ -145,4 +145,22 @@ public class IntentCreator {
         }
     }
 
+    @Override
+    public String toString() {
+        String jsonFormat = "\t\"%s\": \"%s\"%s";
+        String newline = "\n";
+        String newlineMore = "," + newline;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\n");
+        builder.append(String.format(jsonFormat, "intercepts", intercepts.toString(), newlineMore));
+        builder.append(String.format(jsonFormat, "uri", uri + "", newlineMore));
+        builder.append(String.format(jsonFormat, "intent", intent.toString(), newlineMore));
+        builder.append(String.format(jsonFormat, "bundle", bundle + "", newlineMore));
+        builder.append(String.format(jsonFormat, "callingFrom", callingFrom + "", newlineMore));
+        builder.append(String.format(jsonFormat, "requestCode", requestCode + "", newlineMore));
+        builder.append(String.format(jsonFormat, "app", app + "", newline));
+        builder.append("}");
+        return builder.toString();
+    }
 }

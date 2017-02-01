@@ -7,6 +7,9 @@ import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -15,7 +18,7 @@ import java.lang.reflect.Proxy;
 import java.util.Vector;
 
 import icarus.io.router.annotation.Extra;
-import icarus.io.router.annotation.Extras;
+import icarus.io.router.annotation.Conditions;
 import icarus.io.router.annotation.Route;
 import icarus.io.router.intercepts.RouteInterceptor;
 
@@ -58,8 +61,8 @@ public class Journey implements InvocationHandler {
                     @Override
                     public boolean onRoute(Intent intent) {
                         // pass in list of values
-                        if( method.isAnnotationPresent(Extras.class)) {
-                            Extras extras = method.getAnnotation(Extras.class);
+                        if( method.isAnnotationPresent(Conditions.class)) {
+                            Conditions extras = method.getAnnotation(Conditions.class);
                             intent.putExtra(EXTRA_LIST, extras.value());
                         }
                         return true;
@@ -95,6 +98,7 @@ public class Journey implements InvocationHandler {
     private void handleAnnotations(Intent intent, Annotation[] annotations, Object arg ) {
         Class<?> clz = arg.getClass();
 
+        Bundle bundle = new Bundle();
         for( Annotation annotation : annotations ) {
             if( annotation instanceof Extra ) {
                 Extra extra = (Extra) annotation;
@@ -103,79 +107,90 @@ public class Journey implements InvocationHandler {
                     // no-op
                 }
                 else if( clz.isAssignableFrom(String.class)) {
-                    intent.putExtra(name, (String)arg);
+                    bundle.putString(name, (String)arg);
                 }
                 else if( clz.isAssignableFrom(String[].class)) {
-                    intent.putExtra(name, (String[])arg);
+                    bundle.putStringArray(name, (String[])arg);
                 }
                 else if( clz.isAssignableFrom(boolean.class)) {
-                    intent.putExtra(name, (boolean)arg);
+                    bundle.putBoolean(name, (boolean)arg);
                 }
                 else if( clz.isAssignableFrom(boolean[].class)) {
-                    intent.putExtra(name, (boolean[])arg);
+                    bundle.putBooleanArray(name, (boolean[])arg);
                 }
                 else if( clz.isAssignableFrom(byte.class)) {
-                    intent.putExtra(name, (byte)arg);
+                    bundle.putByte(name, (byte)arg);
                 }
                 else if( clz.isAssignableFrom(byte[].class)) {
-                    intent.putExtra(name, (byte[])arg);
+                    bundle.putByteArray(name, (byte[])arg);
                 }
                 else if( clz.isAssignableFrom(char.class)) {
-                    intent.putExtra(name, (char)arg);
+                    bundle.putChar(name, (char)arg);
                 }
                 else if( clz.isAssignableFrom(char[].class)) {
-                    intent.putExtra(name, (char[])arg);
+                    bundle.putCharArray(name, (char[])arg);
                 }
                 else if( clz.isAssignableFrom(CharSequence[].class)) {
-                    intent.putExtra(name, (CharSequence[])arg);
+                    bundle.putCharSequenceArray(name, (CharSequence[])arg);
                 }
                 else if( clz.isAssignableFrom(CharSequence.class)) {
-                    intent.putExtra(name, (CharSequence)arg);
+                    bundle.putCharSequence(name, (CharSequence)arg);
                 }
                 else if( clz.isAssignableFrom(double.class)) {
-                    intent.putExtra(name, (double)arg);
+                    bundle.putDouble(name, (double)arg);
                 }
                 else if( clz.isAssignableFrom(double[].class)) {
-                    intent.putExtra(name, (double[])arg);
+                    bundle.putDoubleArray(name, (double[])arg);
                 }
                 else if( clz.isAssignableFrom(float.class)) {
-                    intent.putExtra(name, (float)arg);
+                    bundle.putFloat(name, (float)arg);
                 }
                 else if( clz.isAssignableFrom(float[].class)) {
-                    intent.putExtra(name, (float[])arg);
+                    bundle.putFloatArray(name, (float[])arg);
                 }
                 else if( clz.isAssignableFrom(int.class)) {
-                    intent.putExtra(name, (int)arg);
+                    bundle.putInt(name, (int)arg);
                 }
                 else if( clz.isAssignableFrom(int[].class)) {
-                    intent.putExtra(name, (int[])arg);
+                    bundle.putIntArray(name, (int[])arg);
                 }
                 else if( clz.isAssignableFrom(long.class)) {
-                    intent.putExtra(name, (long)arg);
+                    bundle.putLong(name, (long)arg);
                 }
                 else if( clz.isAssignableFrom(long[].class)) {
-                    intent.putExtra(name, (long[])arg);
+                    bundle.putLongArray(name, (long[])arg);
                 }
                 else if( clz.isAssignableFrom(Parcelable.class)) {
-                    intent.putExtra(name, (Parcelable)arg);
+                    bundle.putParcelable(name, (Parcelable)arg);
                 }
                 else if( clz.isAssignableFrom(Parcelable[].class)) {
-                    intent.putExtra(name, (Parcelable[])arg);
+                    bundle.putParcelableArray(name, (Parcelable[])arg);
                 }
-                else if( clz.isAssignableFrom(Serializable.class)) {
-                    intent.putExtra(name, (Serializable)arg);
+                else if( isSerializeable(arg) ) {
+                    bundle.putSerializable(name, (Serializable)arg);
                 }
                 else if( clz.isAssignableFrom(short.class)) {
-                    intent.putExtra(name, (short)arg);
+                    bundle.putShort(name, (short)arg);
                 }
                 else if( clz.isAssignableFrom(short[].class)) {
-                    intent.putExtra(name, (short[])arg);
+                    bundle.putShortArray(name, (short[])arg);
                 }
                 else if( clz.isAssignableFrom(Bundle.class)) {
-                    intent.putExtra(name, (Bundle)arg);
+                    bundle.putBundle(name, (Bundle)arg);
                 }
             }
         }
+
+        intent.putExtras(bundle);
+    }
+
+    private synchronized boolean isSerializeable( Object o ) {
+        try {
+            new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(o);
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     /**

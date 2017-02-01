@@ -7,9 +7,9 @@ import icarus.io.router.api.Journey;
 /**
  * Created by chris on 10/21/16.
  */
-public abstract class RouteExtraInterceptor implements RouteInterceptor {
+public abstract class RouteConditionInterceptor implements RouteInterceptor {
 
-    public abstract boolean onRouteExtras( Intent intent, String[] extras );
+    public abstract boolean onRouteExtras( Intent intent, String[] conditions );
 
     @Override
     public boolean onRoute(Intent intent) {
