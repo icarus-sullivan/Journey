@@ -8,7 +8,7 @@ ext {
     SourceUrl = 'https://github.com/icarus-sullivan/Journey.git'
     Website = 'https://github.com/icarus-sullivan/Journey'
     Description = 'An Android app router, used to consolidate all app routes into one class definition.'
-    Version = '1.1.2'
+    Version = '1.1.3'
     GroupId = 'com.github.icarus-sullivan'
     ArtifactId = 'journey'
     Labels = ['android', 'apps', 'routing', 'route', 'fragment', 'webview', 'activity']
